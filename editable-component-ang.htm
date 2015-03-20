@@ -7,6 +7,20 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+		
+		<style>
+			.myClass {
+				-webkit-transition: all 0.30s ease-in-out;
+				  -moz-transition: all 0.30s ease-in-out;
+				  -ms-transition: all 0.30s ease-in-out;
+				  -o-transition: all 0.30s ease-in-out;
+				  outline: none;
+				  padding: 3px 0px 3px 3px;
+				  margin: 5px 1px 3px 0px;
+				   border: 1px solid rgba(255, 0, 0, 0.8);
+			}
+			</style>
+
 		<script>
 			var app = angular.module("exampleApp", []).controller("defaultCtrl", function ($scope) {
 
@@ -30,6 +44,7 @@
 						var cancelButton = angular.element(elem[0].querySelector('.cancel-button'));
 						var saveButton = angular.element(elem[0].querySelector('.save-button'));
 						
+						
 						/**
 						* Code for Edit feature, will change the DOM for editable components.
 						*/
@@ -38,7 +53,6 @@
 							for (var i = 1; i < childs.length - 1; i++){
 							
 								var keyCode = angular.element(childs[i]).attr("e-value");
-								var regexExp = angular.element(childs[i]).attr("e-regex");
 								var currentTr = angular.element(childs[i]);
 								
 								
@@ -55,9 +69,7 @@
 									angular.element(childs[i]).append('<textarea rows="4" cols="50"> '+value+'</textarea>');
 								 }
 								 
-								cancelButton.toggleClass("hidden");
-								saveButton.toggleClass("hidden");
-								editButton.addClass("hidden");
+									buttonBehavior();
 								 
 							}
 						});
@@ -75,12 +87,10 @@
 								
 								 if(currentTr.hasClass("editable-text") || currentTr.hasClass("editable-textArea")){
 									angular.element(currentTr.children()).toggleClass("hidden");
-									angular.element(currentTr.children()[1]).remove();			
+									angular.element(currentTr.children()[1]).remove();
 								 }
 						
-								editButton.toggleClass("hidden");
-								saveButton.toggleClass("hidden");
-								cancelButton.addClass("hidden");
+								buttonBehavior();
 							}
 						});
 						
@@ -91,28 +101,62 @@
 						saveButton.on("click", function (e) {
 						
 							var childs = elem.children();
-							for (var i = 1; i < childs.length - 1; i++){
-								
-								var currentTr = angular.element(childs[i]);
+							var detectedField = 0; var validFields = 0;
 							
+							/** Check if all the fields are valid **/
+							for (var i = 1; i < childs.length - 1; i++){
+							
+								var currentTr = angular.element(childs[i]);
+						
 								if(currentTr.hasClass("editable-text") || currentTr.hasClass("editable-textArea")){
-									currentTr.children().toggleClass("hidden");
+									
+									detectedField++;
+									var regexExp = new RegExp(currentTr.attr("e-regex"));
 									var newValue = currentTr.children()[1].value;
-									var keyCode = currentTr.attr("e-value");
-									console.log("Index : " + i + " -> " + keyCode + " : " + newValue);
-									scope.item[keyCode.trim()] =  newValue;
-									scope.$apply();
-									currentTr.children()[1].remove();
+									var passRegex =  regexExp.test(newValue);
+									
+									console.log(regexExp+ " : " + newValue + " : " +  regexExp.test(newValue));
+
+									if(passRegex){
+										validFields++;
+										angular.element(currentTr.children()[1]).removeClass("myClass");
+									}else{
+										angular.element(currentTr.children()[1]).addClass("myClass");
+									}
 								}
 								
+							}	
 								
-							}
+								
+							if(validFields == detectedField){
 							
-							editButton.toggleClass("hidden");
-							cancelButton.toggleClass("hidden");
-							$(this).addClass("hidden");
+								for (var i = 1; i < childs.length - 1; i++){
+									var currentTr = angular.element(childs[i]);
+									
+									if(currentTr.hasClass("editable-text") || currentTr.hasClass("editable-textArea")){
+										currentTr.children().toggleClass("hidden");
+										var keyCode = currentTr.attr("e-value");
+										var newValue = currentTr.children()[1].value;
+										//console.log("Index : " + i + " -> " + keyCode + " : " + newValue);
+										scope.item[keyCode.trim()] =  newValue;
+										scope.$apply();
+										currentTr.children()[1].remove();
+									}
+								}
+							
+							
+								buttonBehavior();
+								console.log("Sending to process : " + angular.toJson(scope.item));	
+							}
+								
 							
 						});
+						
+						function buttonBehavior() {
+							editButton.toggleClass("hidden");
+							cancelButton.toggleClass("hidden");
+							saveButton.toggleClass("hidden");
+						}
 						
 					}
 				}
@@ -138,9 +182,9 @@
 			   <tr editable-row ng-repeat = "person in data" item ="person" url=$%$6>
 					<td>{{$index}}</td>
 					<td>{{person.name}}</td>
-					<td class = "editable-text" e-value="nick" e-regex=""><span ng-bind="person.nick"></span></td>
+					<td class = "editable-text" e-value="nick" e-regex="[a-zA-Z]+$"><span ng-bind="person.nick"></span></td>
 					<td class = "editable-textArea" e-value="description" e-regex=""><span ng-bind="person.description"></span></td>
-					<td class = "editable-text" e-value="nick2" e-regex=""><span>{{person.nick2}}</span></td>
+					<td class = "editable-text" e-value="nick2" e-regex="[0-9]+$"><span>{{person.nick2}}</span></td>
 					<td>
 						<button type="button" class="btn btn-primary edit-button" >Edit</button>
 						<button type="button" class="btn btn-success save-button hidden">Save</button>
