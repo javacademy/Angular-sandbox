@@ -38,6 +38,9 @@
 						status : [],
 						requestType : []
 					};
+					
+					$scope.initialForm.statusCheck = false;
+					$scope.initialForm.requestTypeCheck = false;
 				};
 				
 				$scope.searchFunction = function searchFunction(){
@@ -68,8 +71,10 @@
     					    if(newValue.length == 0 && oldValue.length != 0 ){
     					      var childs = elem.children();
 								for (var i = 1; i < childs.length ; i++){
-								  var label = childs[i].childNodes;
+								  var label = childs[i];
+								  var io = label.childNodes;
 									var currentCheckbox = angular.element(io[1]);
+									currentCheckbox.checked = false;
 									currentCheckbox.removeAttr('checked');
 								}
     					      
@@ -105,7 +110,6 @@
 						  }else{
 							scopedArray.splice(scopedArray.indexOf(valueChecked), 1); 
 						  }
-						  
 						  scope.$apply(); 
 						});
 					}
